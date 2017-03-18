@@ -50,7 +50,6 @@ public:
         Disclosure* GetSatisfyingDisclosure(const char, bool last = false);
         void GetNonTermsWithDisclosureToTerm(const char, vector<NonTerm*>&);
         void ReplaceNonTermWith(NonTerm *src, NonTerm *dest);
-        void RemoveResidualNonTerminals();
         void AddRecursiveToDiclosureStartingWith(const char);
         void AddDisclosure(Disclosure);
         bool IsResidual();
@@ -88,6 +87,9 @@ private://methods
     void BuildNonRecursive(vector<string> chains);
     void AddChainToGrammar(string chain, bool maxLenChain = false);
     void AddMaxLenChain(string chain);
+    //SECOND step
+    void GetResidualNonTerminals();
+    void RemoveResidualNonTerminals();
     //THIRD step
     void SimplyfyGrammar();
     //support functions

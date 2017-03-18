@@ -23,7 +23,7 @@ ChainGrammar::ChainGrammar(vector<string> chains)
 {
     sort(chains);
     BuildNonRecursive(chains);
-    dynamic_pointer_cast<NonTerm>(_startSymbol)->RemoveResidualNonTerminals();
+    RemoveResidualNonTerminals();
     SimplyfyGrammar();
 }
 
@@ -46,6 +46,22 @@ set<string> ChainGrammar::GenerateRandomChains(int n)
         }
     }
     return randomChains;
+}
+
+
+void ChainGrammar::BuildNonRecursive(vector<string> chains)
+{
+    int maxLen = chains[0].length();
+    for each(string chain in chains)
+    {
+        AddChainToGrammar(chain, maxLen == chain.length());
+    }
+}
+
+
+void ChainGrammar::RemoveResidualNonTerminals()
+{
+
 }
 
 
@@ -96,16 +112,6 @@ void ChainGrammar::NonTerm::GetNonTermsWithDisclosureToTerm(const char term, vec
         {
             dynamic_pointer_cast<NonTerm>(disclosure.second)->GetNonTermsWithDisclosureToTerm(term, v);
         }
-    }
-}
-
-
-void ChainGrammar::BuildNonRecursive(vector<string> chains)
-{
-    int maxLen = chains[0].length();
-    for each(string chain in chains)
-    {
-        AddChainToGrammar(chain, maxLen == chain.length());
     }
 }
 
@@ -282,43 +288,6 @@ bool ChainGrammar::NonTerm::IsResidual()
         }
     }
     return false;
-}
-
-
-void ChainGrammar::NonTerm::RemoveResidualNonTerminals()
-{
-    for (int i = 0; i < _disclosures.size(); i++)
-    {
-        if (nullptr != _disclosures[i].second && !_disclosures[i].second->IsTerm())
-        {
-            auto nonTermSecond = dynamic_pointer_cast<NonTerm>(_disclosures[i].second);
-            if (nonTermSecond->IsResidual())
-            {
-                char t1, t2;
-                for each(Disclosure discl in nonTermSecond->GetDisclosures())
-                {
-                    if (discl.first->IsTerm() && nullptr != discl.second && discl.second->IsTerm())
-                    {
-                        t1 = dynamic_pointer_cast<Term>(discl.first)->GetValue();
-                        t2 = dynamic_pointer_cast<Term>(discl.second)->GetValue();
-                        break;
-                    }
-                }
-                if (nonTermSecond->HasDisclosureToTerm(t2, true))
-                {
-                    if (!HasDisclosureToTerm(t2, true))
-                    {
-                        AddDisclosure(Disclosure(Term::Ptr(new Term(t2)), nullptr));
-                    }
-                    _disclosures[i].second = Ptr(this, [](NonTerm*) {});
-                }
-            }
-            else
-            {
-                nonTermSecond->RemoveResidualNonTerminals();
-            }
-        }
-    }
 }
 
 
