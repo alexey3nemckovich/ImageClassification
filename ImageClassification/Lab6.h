@@ -12,7 +12,10 @@ class Lab6
     : public Lab
 {
 public:
-    Lab6();
+    Lab6()
+    {
+        Labs::GetInstance()->SetActive(GetNumber());
+    }
     virtual ~Lab6();
     HierarchyGroup::Ptr GetHierarchyGroup(int objectCount);
     void AddHierarchyGroupImageToCoordinateSystem(HierarchyGroup::Ptr top, StandardCoordinateSystem* sc, bool clearCoordSystem = true);

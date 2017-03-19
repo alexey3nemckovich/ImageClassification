@@ -12,7 +12,10 @@ class Lab4
     : public Lab
 {
 public:
-    Lab4();
+    Lab4()
+    {
+        Labs::GetInstance()->SetActive(GetNumber());
+    }
     virtual ~Lab4();
     vector<DecisionFunction> GetDecisionFunctions(vector<vector<SpacePoint>> decisiveSamples);
     int GetNumber()

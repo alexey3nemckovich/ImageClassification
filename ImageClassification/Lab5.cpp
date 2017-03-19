@@ -2,12 +2,6 @@
 #include "Lab5.h"
 
 
-Lab5::Lab5()
-{
-    srand(time(NULL));
-}
-
-
 Lab5::~Lab5()
 {
 

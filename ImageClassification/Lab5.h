@@ -12,7 +12,10 @@ class Lab5
     : public Lab
 {
 public:
-    Lab5();
+    Lab5()
+    {
+        Labs::GetInstance()->SetActive(GetNumber());
+    }
     virtual ~Lab5();
     Potential GetPotentialFunction(vector<CPoint> c1, vector<CPoint> c2);
     void PushNRandomLogicPointsToVector(vector<LogicPoint> &v, int n, int x1, int x2, int y1, int y2);

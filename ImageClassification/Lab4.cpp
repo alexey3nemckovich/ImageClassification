@@ -2,12 +2,6 @@
 #include "Lab4.h"
 
 
-Lab4::Lab4()
-{
-
-}
-
-
 Lab4::~Lab4()
 {
 

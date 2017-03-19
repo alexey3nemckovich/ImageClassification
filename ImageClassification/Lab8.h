@@ -10,7 +10,10 @@ class Lab8
     : public Lab
 {
 public:
-    Lab8() = default;
+    Lab8()
+    {
+        Labs::GetInstance()->SetActive(GetNumber());
+    }
     virtual ~Lab8() = default;
     int GetNumber()
     {

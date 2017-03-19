@@ -3,6 +3,8 @@
 #include <set>
 #include <memory>
 #include <string>
+#include <deque>
+#include <functional>
 using namespace std;
 
 
@@ -16,7 +18,7 @@ public:
         Symbol() = default;
         virtual ~Symbol() = default;
         typedef shared_ptr<Symbol> Ptr;
-        typedef pair<Ptr, Ptr> Disclosure;
+        typedef pair<Ptr, Ptr> Disclosuer;
         virtual bool IsTerm() const = 0;
     };
     class Term
@@ -38,46 +40,56 @@ public:
         : public Symbol
     {
     public:
+        //main interface
         NonTerm() = default;
         virtual ~NonTerm()/* = default;*/
         {
             __noop();
         }
         typedef shared_ptr<NonTerm> Ptr;
+        typedef function<bool(NonTerm*)> SearchCondition;
         string GetRandomChain();
-        vector<Disclosure> GetDisclosures() const;
-        Disclosure* GetRandomDisclosure();
-        Disclosure* GetSatisfyingDisclosure(const char, bool last = false);
-        void GetNonTermsWithDisclosureToTerm(const char, vector<NonTerm*>&);
-        void ReplaceNonTermWith(NonTerm *src, NonTerm *dest);
-        void RemoveResidualNonTerminals();
-        void AddRecursiveToDiclosureStartingWith(const char);
-        void AddDisclosure(Disclosure);
-        bool IsResidual();
-        bool HasDisclosureToTerm(const char, bool = false);
+    public:
+        //getters
+        Disclosuer* GetRandomDisclosuer();
+        vector<Disclosuer> GetDisclosuers() const;
+        Disclosuer* GetSatisfyingDisclosuer(const char, bool last = false);
+        void GetNonTermsWithCondition(vector<NonTerm*>&, SearchCondition condition, deque<NonTerm*> stack = deque<NonTerm*>());
+    public:
+        //info
+        bool IsResidual() const;
+        bool HasDisclosuerToTerm(const char, bool = false) const;
         virtual bool IsTerm() const override { return false; }
-        bool EqualTo(const NonTerm* other) const
+        bool EqualTo(const NonTerm* other) const;
+    public:
+        void ReplaceNonTermWith(NonTerm *src, NonTerm *dest, deque<NonTerm*> stack = deque<NonTerm*>());
+        void AddRecursiveToDiclosureStartingWith(const char);
+        void AddDisclosuer(Disclosuer);
+        friend bool NonTerminalsDisclosuersEqual(const Disclosuer& a, const Disclosuer& b, const NonTerm* nonTermA, const NonTerm* nonTermB);
+    protected:
+        vector<Disclosuer> _disclosuers;
+    };
+    class ResidualNonTerm
+        : public NonTerm
+    {
+    public:
+        ResidualNonTerm(char t1, char t2)
         {
-            vector<Disclosure> otherDisclousers = other->GetDisclosures();
-            if (_disclosures.size() == otherDisclousers.size())
-            {
-                for (int i = 0; i < _disclosures.size(); i++)
-                {
-                    if (!NonTerminalsDisclosuresEqual(_disclosures[i], otherDisclousers[i], this, other))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            AddDisclosuer(Disclosuer(new Term(t1), new Term(t2)));
         }
-        friend bool NonTerminalsDisclosuresEqual(const Disclosure& a, const Disclosure& b, const NonTerm* nonTermA, const NonTerm* nonTermB);
-    private:
-        vector<Disclosure> _disclosures;
+        pair<char, char> GetResidualTermsValues()
+        {
+            pair<char, char> res;
+            for each(NonTerm::Disclosuer disc in _disclosuers)
+            {
+                if (nullptr != disc.second)
+                {
+                    res.first = dynamic_pointer_cast<Term>(disc.first)->GetValue();
+                    res.second = dynamic_pointer_cast<Term>(disc.second)->GetValue();
+                }
+            }
+            return res;
+        }
     };
     ///
     ChainGrammar(vector<string> chains);
@@ -88,13 +100,17 @@ private://methods
     void BuildNonRecursive(vector<string> chains);
     void AddChainToGrammar(string chain, bool maxLenChain = false);
     void AddMaxLenChain(string chain);
+    //SECOND step
+    void RemoveResidualNonTerminals();
     //THIRD step
     void SimplyfyGrammar();
     //support functions
-    Symbol::Disclosure AddDisclosureToNonTerm(NonTerm::Ptr symbol, const string& chain, int termIndex);
-    Symbol::Disclosure AddResidualDisclosureToNonTerm(NonTerm::Ptr symbol, char t1, char t2);
+    void RemoveEqualNonTerminals(vector<NonTerm*>&);
+    Symbol::Disclosuer AddDisclosuerToNonTerm(NonTerm::Ptr symbol, char term, char t1, char t2);
+    Symbol::Disclosuer AddDisclosuerToNonTerm(NonTerm::Ptr symbol, char term, bool lastTerm);
     void CheckNewTerm(char term);
 private://members
-    Symbol::Ptr _startSymbol;
+    NonTerm::Ptr _startSymbol;
     vector<char> _termValues;
+    const NonTerm::SearchCondition residualSearchCond = [](NonTerm* nonTerm)-> bool {return nonTerm->IsResidual(); };
 };

@@ -8,12 +8,6 @@ double CalcSigma(vector<double>, double mu);
 double CalcMu(vector<double>);
 
 
-Lab3::Lab3()
-{
-    srand(time(NULL));
-}
-
-
 Lab3::~Lab3()
 {
 }
