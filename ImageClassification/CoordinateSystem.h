@@ -110,6 +110,19 @@ public:
     {
         _plots.push_back(std::move(plot));
     }
+    Plot* LastPlot()
+    {
+        if (_plots.size())
+        {
+            return  &_plots[_plots.size() -1];
+        }
+    }
+//getters
+public:
+    vector<Plot> GetPlots()
+    {
+        return _plots;
+    }
 //setters
 public:
     void SetLogicBounds(const CRect& rect)
@@ -135,6 +148,9 @@ public:
 //converts
 public:
     CPoint LogicToPhysPoint(const LogicPoint& point) const;
+    LogicPoint PhysToLogicPoint(const CPoint& point) const;
     int LogicToPhysX(double x) const;
-    int LogicToPhysY(double y) const;
+    double PhysToLogicX(double x) const;
+    int LogicToPhysY(double x) const;
+    double PhysToLogicY(double y) const;
 };

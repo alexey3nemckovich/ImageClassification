@@ -112,15 +112,36 @@ CPoint StandardCoordinateSystem::LogicToPhysPoint(const LogicPoint& lp) const
 }
 
 
+LogicPoint StandardCoordinateSystem::PhysToLogicPoint(const CPoint& point) const
+{
+    LogicPoint lp;
+    lp.x = PhysToLogicX(point.x);
+    lp.y = PhysToLogicY(point.y);
+    return lp;
+}
+
+
 int StandardCoordinateSystem::LogicToPhysX(double x) const
 {
     return _physOrigin.x + _horzScale * x;
 }
 
 
+double StandardCoordinateSystem::PhysToLogicX(double x) const
+{
+    return (x - _physOrigin.x) / _horzScale;
+}
+
+
 int StandardCoordinateSystem::LogicToPhysY(double y) const
 {
     return _physOrigin.y - _vertScale * y;
+}
+
+
+double StandardCoordinateSystem::PhysToLogicY(double y) const
+{
+    return (_physOrigin.y - y) / _vertScale;
 }
 
 

@@ -21,6 +21,6 @@ public:
         return _active;
     }
 private:
-    Labs();
+    Labs() = default;
     int _active = INT_MIN;
 };

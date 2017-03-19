@@ -128,12 +128,14 @@ afx_msg void CImageClassificationApp::OnAppAbout()
 
 afx_msg void CImageClassificationApp::OnLab3()
 {
+    auto sc = StandardCoordinateSystem::GetInstance();
+    m_pMainWnd->InvalidateRect(NULL, TRUE);
+    sc->Clear();
     CLab3InputDlg dlg;
     if (IDCANCEL != dlg.DoModal())
     {
         Lab3 lab3;
         auto plots = lab3.GeneratePlots(dlg.GetN(), dlg.GetPC1(), 0, 5);
-        auto sc = StandardCoordinateSystem::GetInstance();
         sc->Clear();
         sc->SetLogicBounds(CRect(-1, 1, 5, -1));
         LogicPoint *lp;
@@ -150,6 +152,8 @@ afx_msg void CImageClassificationApp::OnLab3()
 
 afx_msg void CImageClassificationApp::OnLab4()
 {
+    StandardCoordinateSystem::GetInstance()->Clear();
+    m_pMainWnd->InvalidateRect(NULL, TRUE);
     CLab4InputDlg dlg;
     if (IDCANCEL != dlg.DoModal())
     {
@@ -169,6 +173,9 @@ afx_msg void CImageClassificationApp::OnLab4()
 
 afx_msg void CImageClassificationApp::OnLab5()
 {
+    auto sc = StandardCoordinateSystem::GetInstance();
+    sc->Clear();
+    m_pMainWnd->InvalidateRect(NULL, TRUE);
     static COLORREF redColor = RGB(255, 0, 0);
     static COLORREF blueColor = RGB(0,0, 255);
     CLab5InputDlg dlg;
@@ -189,7 +196,6 @@ afx_msg void CImageClassificationApp::OnLab5()
         vector<LogicPoint> randPoints;
         lab5.PushNRandomLogicPointsToVector(randPoints, dlg.GetN(), -5, 5, -5, 5);
         Plot potentialFuncPlot(v, PS_SOLID, 1, redColor);
-        auto sc = StandardCoordinateSystem::GetInstance();
         sc->Clear();
         sc->EnableGridRendering();
         sc->SetLogicBounds(CRect(-5, 5, 5, -5));
@@ -214,6 +220,8 @@ afx_msg void CImageClassificationApp::OnLab5()
 
 afx_msg void CImageClassificationApp::OnLab6()
 {
+    StandardCoordinateSystem::GetInstance()->Clear();
+    m_pMainWnd->InvalidateRect(NULL, TRUE);
     CLab6InputDlg dlg;
     if (IDCANCEL != dlg.DoModal())
     {
@@ -227,19 +235,21 @@ afx_msg void CImageClassificationApp::OnLab6()
 
 afx_msg void CImageClassificationApp::OnLab7()
 {
+    auto sc = StandardCoordinateSystem::GetInstance();
+    sc->Clear();
+    m_pMainWnd->InvalidateRect(NULL, TRUE);
     CLab7InputDlg dlg;
     DWORD res;
     if (IDCANCEL != (res = dlg.DoModal()))
     {
-        Lab7 lab;
-        auto sc = StandardCoordinateSystem::GetInstance();
+        auto lab = Lab7::GetInstance();
         sc->Clear();
         switch (res)
         {
         case IDC_BUTTON7_GEN:
         {
             sc->SetLogicBounds(CRect(-1, 5, 5, -1));
-            vector<Plot> shape = lab.GenerateShape(0, 4, 0, 4);
+            vector<Plot> shape = lab->GenerateShape(0, 4, 0, 4);
             for (int i = 0; i < shape.size(); i++)
             {
                 sc->AddPlot(shape[i]);
@@ -247,6 +257,7 @@ afx_msg void CImageClassificationApp::OnLab7()
             break;
         }
         case IDC_BUTTON7_CHECK:
+            lab->SetMode(true);
             break;
         }
         m_pMainWnd->InvalidateRect(NULL, TRUE);
@@ -256,6 +267,8 @@ afx_msg void CImageClassificationApp::OnLab7()
 
 afx_msg void CImageClassificationApp::OnLab8() 
 {
+    StandardCoordinateSystem::GetInstance()->Clear();
+    m_pMainWnd->InvalidateRect(NULL, TRUE);
     CLab8InputDlg dlg;
     if (IDCANCEL != dlg.DoModal())
     {

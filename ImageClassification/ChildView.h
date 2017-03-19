@@ -1,12 +1,8 @@
-
-// ChildView.h : interface of the CChildView class
-//
-
-
 #pragma once
+#include "Labs.h"
+#include "Lab7.h"
+#include "CoordinateSystem.h"
 
-
-// CChildView window
 
 class CChildView : public CWnd
 {
@@ -32,5 +28,9 @@ public:
 protected:
 	afx_msg void OnPaint();
     afx_msg void OnMouseMove(UINT flags, CPoint point);
+    afx_msg void OnLButtonUp(UINT flags, CPoint point);
+    afx_msg void OnRButtonUp(UINT flags, CPoint point);
 	DECLARE_MESSAGE_MAP()
+private:
+    bool isDrawing = false;
 };

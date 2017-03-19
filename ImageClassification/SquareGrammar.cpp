@@ -24,45 +24,47 @@ vector<Plot> SquareGrammar::GenerateShape(double x1, double x2, double y1, doubl
 
 bool SquareGrammar::CorrectShape(const vector<Token_value> &tokens)
 {
-    return tokens.size() == 4 && S(tokens.begin());
+    auto it = tokens.begin();
+    bool correct = S(it, tokens.end());
+    return correct && tokens.end() == it;
 }
 
 
-bool SquareGrammar::S(vector<Token_value>::const_iterator token)
+bool SquareGrammar::S(vector<Token_value>::const_iterator &token, vector<Token_value>::const_iterator end)
 {
-    if (Token_value::a1 != *token)
+    if (token != end && Token_value::a1 != *token++)
     {
         return false;
     }
     else
     {
-        return O2(token++);
+        return O2(token, end);
     }
 }
 
 
-bool SquareGrammar::O1(vector<Token_value>::const_iterator token)
+bool SquareGrammar::O1(vector<Token_value>::const_iterator &token, vector<Token_value>::const_iterator end)
 {
-    if (Token_value::a2 != *token++)
+    if (token != end && Token_value::a2 != *token++)
     {
         return false;
     }
     else
     {
-        return Token_value::a2 != *token++;
-    }
+        return token != end && Token_value::a2 == *token++;
+    }   
 }
 
 
-bool SquareGrammar::O2(vector<Token_value>::const_iterator token)
+bool SquareGrammar::O2(vector<Token_value>::const_iterator &token, vector<Token_value>::const_iterator end)
 {
-    if (!O1(token))
+    if (!O1(token, end))
     {
         return false;
     }
     else
     {
-        return Token_value::a1 == *token;
+        return token != end && Token_value::a1 == *token++;
     }
 }
 
