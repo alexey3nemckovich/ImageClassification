@@ -41,5 +41,5 @@ afx_msg void CChildView::OnPaint()
 
 afx_msg void CChildView::OnMouseMove(UINT flags, CPoint point)
 {
-    
+    __noop();
 }

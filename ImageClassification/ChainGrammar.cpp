@@ -2,13 +2,13 @@
 #include "ChainGrammar.h"
 
 
-void sort(vector<string> v)
+void sort(vector<string> &v)
 {
-    for (int i = 0; i < v.size() - 1; i++)
+    for (int i = v.size() - 1; i > 0; i--)
     {
-        for (int j = i + 1; j < v.size(); j++)
+        for (int j = i; j > 0; j--)
         {
-            if (v[j].length() > v[j - 1].length())
+            if (v[j].length() > v[j-1].length())
             {
                 string tmp = v[j];
                 v[j] = v[j - 1];
@@ -21,6 +21,7 @@ void sort(vector<string> v)
 
 ChainGrammar::ChainGrammar(vector<string> chains)
 {
+    srand(time(NULL));
     sort(chains);
     BuildNonRecursive(chains);
     RemoveResidualNonTerminals();
@@ -61,56 +62,62 @@ void ChainGrammar::BuildNonRecursive(vector<string> chains)
 
 void ChainGrammar::RemoveResidualNonTerminals()
 {
-
-}
-
-
-void ChainGrammar::SimplyfyGrammar()
-{
-    /*auto p = dynamic_pointer_cast<NonTerm>(_startSymbol);
-    auto A1 = dynamic_pointer_cast<NonTerm>(p->GetDisclosures()[0].second);
-    A1->GetDisclosures()[0].second = NonTerm::Ptr(A1.get(), [](NonTerm*) {});*/
-    vector<NonTerm*> v;
-    for each(char termVal in _termValues)
+    vector<NonTerm*> residuals;
+    _startSymbol->GetNonTermsWithCondition(residuals, residualSearchCond);
+    RemoveEqualNonTerminals(residuals);
+    for each(ResidualNonTerm* residual in residuals)
     {
-        v.clear();
-        dynamic_pointer_cast<NonTerm>(_startSymbol)->GetNonTermsWithDisclosureToTerm(termVal, v);
-        if (v.size() > 1)
+        auto residualTerms = residual->GetResidualTermsValues();
+        char firstResidualTerm = residualTerms.first;
+        vector<NonTerm*> candidates;
+        _startSymbol->GetNonTermsWithCondition(candidates,
+            [firstResidualTerm](NonTerm* nonTerm)-> 
+            bool {return nonTerm->HasDisclosuerToTerm(firstResidualTerm) && !nonTerm->IsResidual(); }
+        );
+        //shouldn't replace residual with start symbol
+        //reason: nobody can't point to start symbol
+        vector<NonTerm*>::iterator it;
+        if (candidates.end() != (it = find(candidates.begin(), candidates.end(), _startSymbol.get())))
         {
-            for (int i = 0; i < v.size(); i++)
+            candidates.erase(it);
+        }
+        for each(NonTerm* candidate in candidates)
+        {
+            bool residualReplaced = false;
+            auto disclosuers = candidate->GetDisclosuers();
+            for each(NonTerm::Disclosuer disc in disclosuers)
             {
-                for (int j = i + 1; j < v.size(); )
+                if (nullptr != disc.second && dynamic_pointer_cast<NonTerm>(disc.second)->HasDisclosuerToTerm(residualTerms.second, true))
                 {
-                    if (v[i]->EqualTo(v[j]))
+                    if (!candidate->HasDisclosuerToTerm(residualTerms.second))
                     {
-                        dynamic_pointer_cast<NonTerm>(_startSymbol)->ReplaceNonTermWith(v[j], v[i]);
-                        v.erase(find(v.begin(), v.end(), v[j]));
+                        candidate->AddDisclosuer(NonTerm::Disclosuer(Term::Ptr(new Term(residualTerms.second)), nullptr));
                     }
-                    else
-                    {
-                        j++;
-                    }
+                    _startSymbol->ReplaceNonTermWith(residual, candidate);
+                    residualReplaced = true;
+                    break;
                 }
             }
+            if (residualReplaced) break;
         }
     }
 }
 
 
-void ChainGrammar::NonTerm::GetNonTermsWithDisclosureToTerm(const char term, vector<NonTerm*> &v)
+void ChainGrammar::SimplyfyGrammar()
 {
-    if (HasDisclosureToTerm(term))
+    vector<NonTerm*> v;
+    for each(char termVal in _termValues)
     {
-        v.push_back(this);
-    }
-    for each(Disclosure disclosure in _disclosures)
-    {
-        if (nullptr != disclosure.second &&
-            !disclosure.second->IsTerm() &&
-            disclosure.second.get() != this &&
-            find(v.begin(), v.end(), disclosure.second.get()) == v.end())
+        v.clear();
+        _startSymbol->GetNonTermsWithCondition(
+            v,
+            [termVal](NonTerm* nonTerm)->
+            bool {return nonTerm->HasDisclosuerToTerm(termVal); }
+        );
+        if (v.size() > 1)
         {
-            dynamic_pointer_cast<NonTerm>(disclosure.second)->GetNonTermsWithDisclosureToTerm(term, v);
+            RemoveEqualNonTerminals(v);
         }
     }
 }
@@ -125,20 +132,20 @@ void ChainGrammar::AddChainToGrammar(string chain, bool maxLenChain/* = false*/)
     else
     {
         int chainLen = chain.length();
-        Symbol::Disclosure disclosure;
+        Symbol::Disclosuer disclosuer;
         Symbol::Ptr currentSymbol = _startSymbol;
         for (int i = 0; i < chainLen; i++)
         {
             bool lastTerm = chainLen - 1 == i;
-            Symbol::Disclosure* pSatisfyingDisclosure;
-            if (pSatisfyingDisclosure = dynamic_pointer_cast<NonTerm>(currentSymbol)->GetSatisfyingDisclosure(chain[i], lastTerm))
+            Symbol::Disclosuer* pSatisfyingDisclosuer;
+            if (pSatisfyingDisclosuer = dynamic_pointer_cast<NonTerm>(currentSymbol)->GetSatisfyingDisclosuer(chain[i], lastTerm))
             {
-                currentSymbol = pSatisfyingDisclosure->second;
+                currentSymbol = pSatisfyingDisclosuer->second;
             }
             else
             {
-                disclosure = AddDisclosureToNonTerm(dynamic_pointer_cast<NonTerm>(currentSymbol), chain, i);
-                currentSymbol = disclosure.second;
+                disclosuer = AddDisclosuerToNonTerm(dynamic_pointer_cast<NonTerm>(currentSymbol), chain[i], lastTerm);
+                currentSymbol = disclosuer.second;
             }
         }
     }
@@ -149,35 +156,72 @@ void ChainGrammar::AddMaxLenChain(string chain)
 {
     if (nullptr == _startSymbol)
     {
-        _startSymbol = Symbol::Ptr(new NonTerm());
+        _startSymbol = NonTerm::Ptr(new NonTerm());
     }
-    Symbol::Disclosure disclosure;
+    Symbol::Disclosuer disclosuer;
     Symbol::Ptr currentSymbol = _startSymbol;
     int chainLen = chain.length();
     for (int i = 0; i < chainLen - 2; i++)
     {
-        disclosure = AddDisclosureToNonTerm(dynamic_pointer_cast<NonTerm>(currentSymbol), chain, i);
-        currentSymbol = disclosure.second;
+        if (chainLen - 3 == i)
+        {
+            disclosuer = AddDisclosuerToNonTerm(dynamic_pointer_cast<NonTerm>(currentSymbol), chain[i], chain[i+1], chain[i+2]);
+        }
+        else
+        {
+            disclosuer = AddDisclosuerToNonTerm(dynamic_pointer_cast<NonTerm>(currentSymbol), chain[i], false);
+        }
+        currentSymbol = disclosuer.second;
     }
-    AddResidualDisclosureToNonTerm(dynamic_pointer_cast<NonTerm>(currentSymbol), chain[chainLen - 2], chain[chainLen - 1]);
 }
 
 
-ChainGrammar::Symbol::Disclosure ChainGrammar::AddDisclosureToNonTerm(ChainGrammar::NonTerm::Ptr symbol, const string& chain, int termIndex)
+void ChainGrammar::RemoveEqualNonTerminals(vector<NonTerm*>& v)
 {
-    ChainGrammar::Symbol::Disclosure newDisclosure;
-    CheckNewTerm(chain[termIndex]);
-    newDisclosure.first = Symbol::Ptr(new Term(chain[termIndex]));
-    if (chain.length() - 1 == termIndex)
+    for (int i = 0; i < v.size(); i++)
     {
-        newDisclosure.second = nullptr;
+        for (int j = i + 1; j < v.size(); )
+        {
+            if (v[i]->EqualTo(v[j]))
+            {
+                auto src = v[j];
+                v.erase(find(v.begin(), v.end(), src));
+                _startSymbol->ReplaceNonTermWith(src, v[i]);
+            }
+            else
+            {
+                j++;
+            }
+        }
+    }
+}
+
+
+ChainGrammar::Symbol::Disclosuer ChainGrammar::AddDisclosuerToNonTerm(NonTerm::Ptr symbol, char term, char t1, char t2)
+{
+    ChainGrammar::Symbol::Disclosuer newdisclosuer;
+    newdisclosuer.first = Symbol::Ptr(new Term(term));
+    newdisclosuer.second = Symbol::Ptr(new ResidualNonTerm(t1, t2));
+    symbol->AddDisclosuer(newdisclosuer);
+    return newdisclosuer;
+}
+
+
+ChainGrammar::Symbol::Disclosuer ChainGrammar::AddDisclosuerToNonTerm(ChainGrammar::NonTerm::Ptr symbol, char term, bool lastTerm)
+{
+    ChainGrammar::Symbol::Disclosuer newdisclosuer;
+    CheckNewTerm(term);
+    newdisclosuer.first = Symbol::Ptr(new Term(term));
+    if (lastTerm)
+    {
+        newdisclosuer.second = nullptr;
     }
     else
     {
-        newDisclosure.second = Symbol::Ptr(new NonTerm());
+        newdisclosuer.second = Symbol::Ptr(new NonTerm());
     }
-    symbol->AddDisclosure(newDisclosure);
-    return newDisclosure;
+    symbol->AddDisclosuer(newdisclosuer);
+    return newdisclosuer;
 }
 
 
@@ -190,55 +234,49 @@ void ChainGrammar::CheckNewTerm(char term)
 }
 
 
-ChainGrammar::Symbol::Disclosure ChainGrammar::AddResidualDisclosureToNonTerm(ChainGrammar::NonTerm::Ptr symbol, char t1, char t2)
-{
-    ChainGrammar::Symbol::Disclosure newDisclosure;
-    CheckNewTerm(t1);
-    CheckNewTerm(t2);
-    newDisclosure.first = Symbol::Ptr(new Term(t1));
-    newDisclosure.second = Symbol::Ptr(new Term(t2));
-    symbol->AddDisclosure(newDisclosure);
-    return newDisclosure;
-}
-
-
 string ChainGrammar::NonTerm::GetRandomChain()
 {
-    int r = rand() % _disclosures.size();
-    string term = string(1, dynamic_pointer_cast<ChainGrammar::Term>(_disclosures[r].first)->GetValue());
-    if (nullptr == _disclosures[r].second)
+    int r = rand() % _disclosuers.size();
+    string term = string(1, dynamic_pointer_cast<ChainGrammar::Term>(_disclosuers[r].first)->GetValue());
+    if (nullptr == _disclosuers[r].second)
     {
         return term;
     }
     else
     {
-        if (_disclosures[r].second->IsTerm())
+        if (_disclosuers[r].second->IsTerm())
         {
-            return term + string(1, dynamic_pointer_cast<ChainGrammar::Term>(_disclosures[r].second)->GetValue());
+            return term + string(1, dynamic_pointer_cast<ChainGrammar::Term>(_disclosuers[r].second)->GetValue());
         }
         else
         {
-            return term + dynamic_pointer_cast<ChainGrammar::NonTerm>(_disclosures[r].second)->GetRandomChain();
+            return term + dynamic_pointer_cast<ChainGrammar::NonTerm>(_disclosuers[r].second)->GetRandomChain();
         }
     }
 }
 
 
-ChainGrammar::Symbol::Disclosure* ChainGrammar::NonTerm::GetRandomDisclosure()
+ChainGrammar::Symbol::Disclosuer* ChainGrammar::NonTerm::GetRandomDisclosuer()
 {
-    return &_disclosures[rand() % _disclosures.size()];
+    return &_disclosuers[rand() % _disclosuers.size()];
 }
 
 
-ChainGrammar::Symbol::Disclosure* ChainGrammar::NonTerm::GetSatisfyingDisclosure(const char term, bool last/* = false*/)
+vector<ChainGrammar::Symbol::Disclosuer> ChainGrammar::NonTerm::GetDisclosuers() const
 {
-    for(int i = 0; i < _disclosures.size(); i++)
+    return _disclosuers;
+}
+
+
+ChainGrammar::Symbol::Disclosuer* ChainGrammar::NonTerm::GetSatisfyingDisclosuer(const char term, bool last/* = false*/)
+{
+    for(int i = 0; i < _disclosuers.size(); i++)
     {
-        if (term == dynamic_pointer_cast<Term>(_disclosures[i].first)->GetValue())
+        if (term == dynamic_pointer_cast<Term>(_disclosuers[i].first)->GetValue())
         {
-            if (!last || (last && nullptr == _disclosures[i].second))
+            if (!last || (last && nullptr == _disclosuers[i].second))
             {
-                return &_disclosures[i];
+                return &_disclosuers[i];
             }
         }
     }
@@ -246,41 +284,32 @@ ChainGrammar::Symbol::Disclosure* ChainGrammar::NonTerm::GetSatisfyingDisclosure
 }
 
 
-bool ChainGrammar::NonTerm::HasDisclosureToTerm(const char term, bool last/* = false*/)
+void ChainGrammar::NonTerm::GetNonTermsWithCondition(vector<NonTerm*>& v, NonTerm::SearchCondition condition, deque<NonTerm*> stack/* = deque<NonTerm*>()*/)
 {
-    for (int i = 0; i < _disclosures.size(); i++)
+    stack.push_back(this);
+    if(condition(this))
     {
-        if (_disclosures[i].first->IsTerm() &&
-            term == dynamic_pointer_cast<Term>(_disclosures[i].first)->GetValue())
+        if (find(v.begin(), v.end(), this) == v.end())
         {
-            return last ? nullptr == _disclosures[i].second : true;
+            v.push_back(this);
         }
     }
-    return false;
-}
-
-
-void ChainGrammar::NonTerm::AddDisclosure(ChainGrammar::Symbol::Disclosure newDiscloser)
-{
-    if (find(_disclosures.begin(), _disclosures.end(), newDiscloser) == _disclosures.end())
+    for each(Disclosuer disclosuer in _disclosuers)
     {
-        _disclosures.push_back(newDiscloser);
+        if (nullptr != disclosuer.second &&
+            !disclosuer.second->IsTerm() &&
+            find(stack.begin(), stack.end(), disclosuer.second.get()) == stack.end())
+        {
+            dynamic_pointer_cast<NonTerm>(disclosuer.second)->GetNonTermsWithCondition(v, condition, stack);
+        }
     }
+    stack.pop_back();
 }
 
 
-void ChainGrammar::NonTerm::AddRecursiveToDiclosureStartingWith(const char term)
+bool ChainGrammar::NonTerm::IsResidual() const
 {
-    Disclosure recDisclosure;
-    recDisclosure.first = Symbol::Ptr(new Term(term));
-    recDisclosure.second = Symbol::Ptr(this);
-    _disclosures.push_back(recDisclosure);
-}
-
-
-bool ChainGrammar::NonTerm::IsResidual()
-{
-    for each(Disclosure disclos in _disclosures)
+    for each(Disclosuer disclos in _disclosuers)
     {
         if (disclos.first->IsTerm() && nullptr != disclos.second && disclos.second->IsTerm())
         {
@@ -291,13 +320,85 @@ bool ChainGrammar::NonTerm::IsResidual()
 }
 
 
-vector<ChainGrammar::Symbol::Disclosure> ChainGrammar::NonTerm::GetDisclosures() const
+bool ChainGrammar::NonTerm::HasDisclosuerToTerm(const char term, bool last/* = false*/) const
 {
-    return _disclosures;
+    for (int i = 0; i < _disclosuers.size(); i++)
+    {
+        if (_disclosuers[i].first->IsTerm() &&
+            term == dynamic_pointer_cast<Term>(_disclosuers[i].first)->GetValue())
+        {
+            return last ? nullptr == _disclosuers[i].second : true;
+        }
+    }
+    return false;
 }
 
 
-bool NonTerminalsDisclosuresEqual(const ChainGrammar::Symbol::Disclosure& a, const ChainGrammar::Symbol::Disclosure& b, const ChainGrammar::NonTerm* nonTermA, const ChainGrammar::NonTerm* nonTermB)
+bool ChainGrammar::NonTerm::EqualTo(const ChainGrammar::NonTerm* other) const
+{
+    vector<Disclosuer> otherdisclosuers = other->GetDisclosuers();
+    if (_disclosuers.size() == otherdisclosuers.size())
+    {
+        for (int i = 0; i < _disclosuers.size(); i++)
+        {
+            if (!NonTerminalsDisclosuersEqual(_disclosuers[i], otherdisclosuers[i], this, other))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+void ChainGrammar::NonTerm::ReplaceNonTermWith(ChainGrammar::NonTerm* src, ChainGrammar::NonTerm* dest, deque<NonTerm*> stack/* = deque<NonTerm*>()*/)
+{
+    stack.push_back(this);
+    for (int i = 0; i < _disclosuers.size(); i++)
+    {
+        if (nullptr != _disclosuers[i].second)
+        {
+            if (_disclosuers[i].second.get() == src)
+            {
+                _disclosuers[i].second.reset(dest, [](NonTerm*) {});
+            }
+            else
+            {
+                if (!_disclosuers[i].second->IsTerm() &&
+                    find(stack.begin(), stack.end(), _disclosuers[i].second.get()) == stack.end())
+                {
+                    dynamic_pointer_cast<ChainGrammar::NonTerm>(_disclosuers[i].second)->ReplaceNonTermWith(src, dest, stack);
+                }
+            }
+        }
+    }
+    stack.pop_back();
+}
+
+
+void ChainGrammar::NonTerm::AddRecursiveToDiclosureStartingWith(const char term)
+{
+    Disclosuer recdisclosuer;
+    recdisclosuer.first = Symbol::Ptr(new Term(term));
+    recdisclosuer.second = Symbol::Ptr(this);
+    _disclosuers.push_back(recdisclosuer);
+}
+
+
+void ChainGrammar::NonTerm::AddDisclosuer(ChainGrammar::Symbol::Disclosuer newDiscloser)
+{
+    if (find(_disclosuers.begin(), _disclosuers.end(), newDiscloser) == _disclosuers.end())
+    {
+        _disclosuers.push_back(newDiscloser);
+    }
+}
+
+
+bool NonTerminalsDisclosuersEqual(const ChainGrammar::Symbol::Disclosuer& a, const ChainGrammar::Symbol::Disclosuer& b, const ChainGrammar::NonTerm* nonTermA, const ChainGrammar::NonTerm* nonTermB)
 {
     if (a.first->IsTerm() == b.first->IsTerm())
     {
@@ -309,11 +410,17 @@ bool NonTerminalsDisclosuresEqual(const ChainGrammar::Symbol::Disclosure& a, con
             }
             else
             {
-                if (a.second->IsTerm() == b.second->IsTerm())
+                if ((nullptr == a.second) == (nullptr == b.second) &&
+                    a.second->IsTerm() == b.second->IsTerm())
                 {
-                    if (a.second == b.second || 
-                       (a.second.get() == nonTermA && b.second.get() == nonTermB) ||
-                       (a.second.get() == nonTermB && b.second.get() == nonTermA))
+                    if (a.second == b.second ||
+                        (a.second.get() == nonTermA && b.second.get() == nonTermB) ||
+                        (a.second.get() == nonTermB && b.second.get() == nonTermA))
+                    {
+                        return true;
+                    }
+                    else if (a.second->IsTerm() &&
+                        dynamic_pointer_cast<ChainGrammar::Term>(a.second)->GetValue() == dynamic_pointer_cast<ChainGrammar::Term>(b.second)->GetValue())
                     {
                         return true;
                     }
@@ -322,26 +429,4 @@ bool NonTerminalsDisclosuresEqual(const ChainGrammar::Symbol::Disclosure& a, con
         }
     }
     return false;
-}
-
-
-void ChainGrammar::NonTerm::ReplaceNonTermWith(ChainGrammar::NonTerm* src, ChainGrammar::NonTerm* dest)
-{
-    for (int i = 0; i < _disclosures.size(); i++)
-    {
-        if (nullptr != _disclosures[i].second)
-        {
-            if (_disclosures[i].second.get() == src)
-            {
-                _disclosures[i].second.reset(dest, [](NonTerm*) {});
-            }
-            else
-            {
-                if (this != _disclosures[i].second.get())
-                {
-                    dynamic_pointer_cast<ChainGrammar::NonTerm>(_disclosures[i].second)->ReplaceNonTermWith(src, dest);
-                }
-            }
-        }
-    }
 }

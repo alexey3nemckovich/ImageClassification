@@ -5,7 +5,7 @@
 #include "MainFrm.h"
 #include "AboutDlg.h"
 #include "CoordinateSystem.h"
-#include "Labs.h"
+#include "LabsHeaders.h"
 
 
 #ifdef _DEBUG
@@ -261,7 +261,7 @@ afx_msg void CImageClassificationApp::OnLab8()
     {
         Lab8 lab;
         auto grammar = lab.GetGrammar(dlg.GetLearningChains());
-        auto chains = grammar.GenerateRandomChains(2);
+        auto chains = grammar.GenerateRandomChains(5);
         string res;
         for each(string chain in chains)
         {

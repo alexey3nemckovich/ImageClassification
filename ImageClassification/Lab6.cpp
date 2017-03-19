@@ -7,12 +7,6 @@ using namespace std;
 typedef vector<HierarchyGroup::Ptr> HierarchyGroupList;
 
 
-Lab6::Lab6()
-{
-
-}
-
-
 Lab6::~Lab6()
 {
 

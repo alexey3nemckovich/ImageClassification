@@ -10,7 +10,10 @@ class Lab7
     : public Lab
 {
 public:
-    Lab7();
+    Lab7()
+    {
+        Labs::GetInstance()->SetActive(GetNumber());
+    }
     virtual ~Lab7();
     vector<Plot> GenerateShape(double x1, double x2, double y1, double y2)
     {

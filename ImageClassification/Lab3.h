@@ -12,7 +12,10 @@ class Lab3
     : public Lab
 {
 public:
-    Lab3();
+    Lab3()
+    {
+        Labs::GetInstance()->SetActive(GetNumber());
+    }
     virtual ~Lab3();
     pair<Plot, Plot> GeneratePlots(int N, double PC1, int x1, int x2);
     int GetNumber()
