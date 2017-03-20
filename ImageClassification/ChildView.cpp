@@ -7,13 +7,16 @@
 #define new DEBUG_NEW
 #endif
 
+
 CChildView::CChildView()
 {
 }
 
+
 CChildView::~CChildView()
 {
 }
+
 
 BEGIN_MESSAGE_MAP(CChildView, CWnd)
     ON_WM_PAINT()
@@ -21,6 +24,7 @@ BEGIN_MESSAGE_MAP(CChildView, CWnd)
     ON_WM_LBUTTONUP()
     ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
+
 
 BOOL CChildView::PreCreateWindow(CREATESTRUCT& cs) 
 {

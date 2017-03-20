@@ -62,7 +62,7 @@ void StandardCoordinateSystem::Clear()
 }
 
 
-void StandardCoordinateSystem::AdLogicPoint(LogicPoint point, COLORREF cl/* = RGB(0, 0, 0)*/, bool detectHorz/* = false*/, bool detectVert/* = false*/, bool horzDetectLine/* = true*/, bool vertDetectLine/* = true*/)
+void StandardCoordinateSystem::AddLogicPoint(LogicPoint point, COLORREF cl/* = RGB(0, 0, 0)*/, bool detectHorz/* = false*/, bool detectVert/* = false*/, bool horzDetectLine/* = true*/, bool vertDetectLine/* = true*/)
 {
     bool exist = false;
     if (detectHorz || detectVert)
@@ -97,9 +97,9 @@ void StandardCoordinateSystem::AdLogicPoint(LogicPoint point, COLORREF cl/* = RG
 }
 
 
-void StandardCoordinateSystem::AdLogicPoint(double x, double y, COLORREF cl/* = RGB(0, 0, 0)*/, bool detectHorz/* = false*/, bool detectVert/* = false*/, bool horzDetectLine/* = true*/, bool vertDetectLine/* = true*/)
+void StandardCoordinateSystem::AddLogicPoint(double x, double y, COLORREF cl/* = RGB(0, 0, 0)*/, bool detectHorz/* = false*/, bool detectVert/* = false*/, bool horzDetectLine/* = true*/, bool vertDetectLine/* = true*/)
 {
-    AdLogicPoint(LogicPoint(x, y), cl, detectHorz, detectVert, horzDetectLine, vertDetectLine);
+    AddLogicPoint(LogicPoint(x, y), cl, detectHorz, detectVert, horzDetectLine, vertDetectLine);
 }
 
 

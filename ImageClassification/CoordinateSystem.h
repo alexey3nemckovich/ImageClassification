@@ -104,8 +104,8 @@ public:
     void Render(CPaintDC *dc);
     void Clear();
     void AddText(LogicPoint p, CString text);
-    void AdLogicPoint(LogicPoint point, COLORREF cl = RGB(0, 0, 0), bool detectHorz = false, bool detectVert = false, bool horzDetectLine = true, bool vertDetectLine = true);
-    void AdLogicPoint(double x, double y, COLORREF cl = RGB(0, 0, 0), bool detectHorz = false, bool detectVert = false, bool horzDetectLine = true, bool vertDetectLine = true);
+    void AddLogicPoint(LogicPoint point, COLORREF cl = RGB(0, 0, 0), bool detectHorz = false, bool detectVert = false, bool horzDetectLine = true, bool vertDetectLine = true);
+    void AddLogicPoint(double x, double y, COLORREF cl = RGB(0, 0, 0), bool detectHorz = false, bool detectVert = false, bool horzDetectLine = true, bool vertDetectLine = true);
     void AddPlot(Plot &plot, COLORREF color = RGB(0,0,0))
     {
         _plots.push_back(std::move(plot));

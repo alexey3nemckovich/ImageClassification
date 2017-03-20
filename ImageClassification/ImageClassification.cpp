@@ -141,7 +141,7 @@ afx_msg void CImageClassificationApp::OnLab3()
         LogicPoint *lp;
         if (lp = plots.first.GetEqualPoint(plots.second))
         {
-            sc->AdLogicPoint(*lp, RGB(255, 0, 0), true, true);
+            sc->AddLogicPoint(*lp, RGB(255, 0, 0), true, true);
         }
         sc->AddPlot(plots.first);
         sc->AddPlot(plots.second);
@@ -211,7 +211,7 @@ afx_msg void CImageClassificationApp::OnLab5()
             {
                 pointColor = blueColor;
             }
-            sc->AdLogicPoint(randPoints[i], false, pointColor);
+            sc->AddLogicPoint(randPoints[i], pointColor);
         }
         m_pMainWnd->InvalidateRect(NULL, TRUE);
     }

@@ -80,11 +80,11 @@ LogicPoint Lab6::RenderHierarchyGroup(HierarchyGroup::Ptr group, StandardCoordin
     LogicPoint groupSCPoint = LogicPoint(x, y);
     if (0 == y)
     {
-        sc->AdLogicPoint(groupSCPoint, COLOR);
+        sc->AddLogicPoint(groupSCPoint, COLOR);
     }
     else
     {
-        sc->AdLogicPoint(groupSCPoint, COLOR, false, true, false, false);
+        sc->AddLogicPoint(groupSCPoint, COLOR, false, true, false, false);
     }
     //sc->RenderText(sc, groupSCPoint, CString(group->GetCName()));
     return LogicPoint(x, y);
