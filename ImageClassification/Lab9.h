@@ -1,31 +1,27 @@
 #pragma once
-#include <vector>
 #include <algorithm>
-#include "Lab.h"
 #include "Perceptron.h"
+#include "Lab.h"
 using namespace std;
 
 
-#define LAB4 4
+#define LAB9 9
 
 
-class Lab4
+class Lab9
     : public Lab, public Perceptron
 {
 public:
-    Lab4()
-    {
-        Labs::GetInstance()->SetActive(GetNumber());
-    }
-    virtual ~Lab4();
+    Lab9();
+    ~Lab9();
     virtual void CorrectCoefficients(
         int classIndex,
         const vector<double> &decFuncValues,
         const vector<SignVector> &decisiveSamples,
         vector<SignVector> &decFuncWeights,
         int maxClassFuncValueIndex = 0) override;
-    int GetNumber()
+    virtual int GetNumber() override
     {
-        return LAB4;
+        return LAB9;
     }
 };

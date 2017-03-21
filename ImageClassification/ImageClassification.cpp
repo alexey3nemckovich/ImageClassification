@@ -21,6 +21,7 @@ BEGIN_MESSAGE_MAP(CImageClassificationApp, CWinApp)
     ON_COMMAND(ID_FILE_LAB6, &CImageClassificationApp::OnLab6)
     ON_COMMAND(ID_FILE_LAB7, &CImageClassificationApp::OnLab7)
     ON_COMMAND(ID_FILE_LAB8, &CImageClassificationApp::OnLab8)
+    ON_COMMAND(ID_FILE_LAB9, &CImageClassificationApp::OnLab9)
 END_MESSAGE_MAP()
 
 
@@ -152,22 +153,8 @@ afx_msg void CImageClassificationApp::OnLab3()
 
 afx_msg void CImageClassificationApp::OnLab4()
 {
-    StandardCoordinateSystem::GetInstance()->Clear();
-    m_pMainWnd->InvalidateRect(NULL, TRUE);
-    CLab4InputDlg dlg;
-    if (IDCANCEL != dlg.DoModal())
-    {
-        Lab4 lab4;
-        vector<DecisionFunction> desFunctions = lab4.GetDecisionFunctions(dlg.GetDecisiveSamples());
-        CString res = "";
-        CString tmp;
-        for (int i = 0; i < desFunctions.size(); i++)
-        {
-            tmp.Format("d%d(x) = ", i + 1);
-            res += tmp + desFunctions[i].ToString() + '\n';
-        }
-        MessageBox(m_pMainWnd->m_hWnd, res, "Answer Lab 4", NULL);
-    }
+    Lab4 lab4;
+    PerceptronLab(&lab4);
 }
 
 
@@ -265,7 +252,7 @@ afx_msg void CImageClassificationApp::OnLab7()
 }
 
 
-afx_msg void CImageClassificationApp::OnLab8() 
+afx_msg void CImageClassificationApp::OnLab8()
 {
     StandardCoordinateSystem::GetInstance()->Clear();
     m_pMainWnd->InvalidateRect(NULL, TRUE);
@@ -274,12 +261,39 @@ afx_msg void CImageClassificationApp::OnLab8()
     {
         Lab8 lab;
         auto grammar = lab.GetGrammar(dlg.GetLearningChains());
-        auto chains = grammar.GenerateRandomChains(5);
+        auto chains = grammar.GenerateRandomChains(20);
         string res;
         for each(string chain in chains)
         {
             res += chain + '\n';
         }
         MessageBox(m_pMainWnd->m_hWnd, res.c_str(), "Answer Lab 8", NULL);
+    }
+}
+
+
+afx_msg void CImageClassificationApp::OnLab9()
+{
+    Lab9 lab9;
+    PerceptronLab(&lab9);
+}
+
+
+void CImageClassificationApp::PerceptronLab(Perceptron* perceptron)
+{
+    StandardCoordinateSystem::GetInstance()->Clear();
+    m_pMainWnd->InvalidateRect(NULL, TRUE);
+    CPerceptronInputDlg dlg;
+    if (IDCANCEL != dlg.DoModal())
+    {
+        vector<Perceptron::DecisionFunction> desFunctions = perceptron->GetDecisionFunctions(dlg.GetDecisiveSamples(), dlg.GetStartWeightCoeffValues());
+        CString res;
+        CString tmp;
+        for (int i = 0; i < desFunctions.size(); i++)
+        {
+            tmp.Format("d%d(x) = ", i + 1);
+            res += tmp + desFunctions[i].ToString() + '\n';
+        }
+        MessageBox(m_pMainWnd->m_hWnd, res, "Answer perceptron", NULL);
     }
 }

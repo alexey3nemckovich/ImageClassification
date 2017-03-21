@@ -5,7 +5,7 @@
 #endif
 
 #include "resource.h"
-
+#include "Perceptron.h"
 
 // CImageClassificationApp:
 // See ImageClassification.cpp for the implementation of this class
@@ -32,7 +32,10 @@ public:
     afx_msg void OnLab6();
     afx_msg void OnLab7();
     afx_msg void OnLab8();
+    afx_msg void OnLab9();
 	DECLARE_MESSAGE_MAP()
+private:
+    void PerceptronLab(Perceptron *perceptron);
 };
 
 extern CImageClassificationApp theApp;

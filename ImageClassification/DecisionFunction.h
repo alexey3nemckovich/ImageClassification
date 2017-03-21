@@ -1,4 +1,5 @@
 #pragma once
+#include "Perceptron.h"
 
 
 class DecisionFunction

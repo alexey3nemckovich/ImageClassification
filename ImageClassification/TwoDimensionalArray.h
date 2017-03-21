@@ -20,9 +20,9 @@ public:
     {
         for (int i = 0; i < _dim1Size; i++)
         {
-            delete _array[i];
+            delete[] _array[i];
         }
-        delete _array;
+        delete[] _array;
     }
     T* operator[](int index)
     {
