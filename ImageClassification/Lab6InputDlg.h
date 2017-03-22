@@ -1,5 +1,6 @@
 #pragma once
 #include "resource.h"
+#include "Lab6.h"
 using namespace std;
 
 
@@ -13,6 +14,10 @@ public:
     {
         return _n;
     }
+    Lab6::Criterion GetCriterion()
+    {
+        return _criterion;
+    }
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
 protected:
@@ -20,4 +25,5 @@ protected:
     DECLARE_MESSAGE_MAP()
 private:
     int _n;
+    Lab6::Criterion _criterion;
 };

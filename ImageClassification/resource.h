@@ -31,6 +31,9 @@
 #define IDC_STATIC_PERC_CL_COUNT        1020
 #define IDC_STATIC_PERC_SIGN_COUNT      1021
 #define IDC_STATIC_PERC_HEADER          1023
+#define IDC_RADIO_PERC_MIN_CRITERION    1026
+#define IDC_RADIO2                      1027
+#define IDC_RADIO_PERC_MAX_CRITERION    1027
 #define ID_LAB3                         32771
 #define ID_FILE_LAB5                    32772
 #define ID_FILE_LAB3                    32773
@@ -46,7 +49,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        322
 #define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         1024
+#define _APS_NEXT_CONTROL_VALUE         1028
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

@@ -213,7 +213,7 @@ afx_msg void CImageClassificationApp::OnLab6()
     if (IDCANCEL != dlg.DoModal())
     {
         Lab6 lab6;
-        HierarchyGroup::Ptr hierarchyHead = lab6.GetHierarchyGroup(dlg.GetObjectsCount());
+        HierarchyGroup::Ptr hierarchyHead = lab6.GetHierarchyGroup(dlg.GetObjectsCount(), dlg.GetCriterion());
         lab6.AddHierarchyGroupImageToCoordinateSystem(hierarchyHead, StandardCoordinateSystem::GetInstance());
         m_pMainWnd->InvalidateRect(NULL);
     }

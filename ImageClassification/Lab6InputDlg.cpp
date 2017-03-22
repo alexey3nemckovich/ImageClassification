@@ -37,6 +37,14 @@ afx_msg void CLab6InputDlg::OnClickOk()
     }
     else
     {
+        if (IsDlgButtonChecked(IDC_RADIO_PERC_MIN_CRITERION))
+        {
+            _criterion = Lab6::Criterion::MIN;
+        }
+        else
+        {
+            _criterion = Lab6::Criterion::MAX;
+        }
         EndDialog(IDOK);
     }
 }

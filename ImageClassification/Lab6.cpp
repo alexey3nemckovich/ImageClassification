@@ -91,16 +91,25 @@ LogicPoint Lab6::RenderHierarchyGroup(HierarchyGroup::Ptr group, StandardCoordin
 }
 
 
-HierarchyGroup::Ptr Lab6::GetHierarchyGroup(int objectsCount)
+HierarchyGroup::Ptr Lab6::GetHierarchyGroup(int objectsCount, Criterion criterion)
 {
     TwoDimensionalArray<double> distanceTable(objectsCount, objectsCount);
-    FillDistanceTable(distanceTable);
-    HierarchyGroupList hierarchyGroupList = GenerateHierarchyGroupList(objectsCount);
+    //example
     /*distanceTable[0][1] = distanceTable[1][0] = 5;
     distanceTable[0][2] = distanceTable[2][0] = 0.5;
     distanceTable[0][3] = distanceTable[3][0] = 2;
     distanceTable[1][2] = distanceTable[2][1] = 1;
     distanceTable[1][3] = distanceTable[3][1] = 0.6;*/
+    if (Criterion::MAX == criterion)
+    {
+        FillDistanceTable(distanceTable, 0, 1);
+        ReplaceValuesToOpposite(distanceTable);
+    }
+    else
+    {
+        FillDistanceTable(distanceTable, 1, 10);
+    }
+    HierarchyGroupList hierarchyGroupList = GenerateHierarchyGroupList(objectsCount);
     char name = 'a';
     while (1 != hierarchyGroupList.size())
     {
@@ -133,7 +142,7 @@ HierarchyGroup::Ptr Lab6::GetHierarchyGroup(int objectsCount)
 }
 
 
-void Lab6::FillDistanceTable(TwoDimensionalArray<double>& distanceTable)
+void Lab6::FillDistanceTable(TwoDimensionalArray<double>& distanceTable, double minVal, double maxVal)
 {
     int size = distanceTable.Size();
     for (int i = 0; i < size; i++)
@@ -142,10 +151,12 @@ void Lab6::FillDistanceTable(TwoDimensionalArray<double>& distanceTable)
         {
             if (i != j)
             {
+                double randDouble;
                 do
                 {
-                    distanceTable[i][j] = distanceTable[j][i] = RandomDouble(1, 10);
-                } while (0 == distanceTable[i][j]);
+                    randDouble = RandomDouble(minVal, maxVal);
+                } while (0 == randDouble && distanceTable.Contains(randDouble));
+                distanceTable[i][j] = distanceTable[j][i] = randDouble;
             }
             else
             {
@@ -164,4 +175,19 @@ HierarchyGroupList Lab6::GenerateHierarchyGroupList(int objectCount)
         hierarchyGroupList.push_back(HierarchyGroup::Ptr(new HierarchyGroup(i)));
     }
     return hierarchyGroupList;
+}
+
+
+void Lab6::ReplaceValuesToOpposite(TwoDimensionalArray<double>& arr)
+{
+    for (int i = 0; i < arr.Size(); i++)
+    {
+        for (int j = 0; j < arr.Size(false); j++)
+        {
+            if (i != j)
+            {
+                arr[i][j] = 1 / arr[i][j];
+            }
+        }
+    }
 }

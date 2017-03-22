@@ -12,13 +12,18 @@ class Lab6
     : public Lab
 {
 public:
+    enum class Criterion
+    {
+        MIN,
+        MAX
+    };
     Lab6()
     {
         Labs::GetInstance()->SetActive(GetNumber());
     }
     virtual ~Lab6();
-    HierarchyGroup::Ptr GetHierarchyGroup(int objectCount);
-    void AddHierarchyGroupImageToCoordinateSystem(HierarchyGroup::Ptr top, StandardCoordinateSystem* sc, bool clearCoordSystem = true);
+    HierarchyGroup::Ptr GetHierarchyGroup(int, Criterion);
+    void AddHierarchyGroupImageToCoordinateSystem(HierarchyGroup::Ptr, StandardCoordinateSystem*, bool clearCoordSystem = true);
     int GetNumber()
     {
         return LAB6;
@@ -26,7 +31,9 @@ public:
 private:
     #define LOGIC_DISTANCE_BETWEEN_OBJECTS 1
     #define LOGIC_VERT_AXIS_HIERARCHY_MARGIN 1
-    LogicPoint RenderHierarchyGroup(HierarchyGroup::Ptr group, StandardCoordinateSystem *sc, double upGroupX, bool left = true);
-    vector<HierarchyGroup::Ptr> GenerateHierarchyGroupList(int objectCount);
-    void FillDistanceTable(TwoDimensionalArray<double>& distanceTable);
+private:
+    LogicPoint RenderHierarchyGroup(HierarchyGroup::Ptr, StandardCoordinateSystem*, double upGroupX, bool left = true);
+    vector<HierarchyGroup::Ptr> GenerateHierarchyGroupList(int);
+    void FillDistanceTable(TwoDimensionalArray<double>&, double, double);
+    void ReplaceValuesToOpposite(TwoDimensionalArray<double>&);
 };

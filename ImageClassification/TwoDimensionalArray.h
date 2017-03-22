@@ -43,6 +43,20 @@ public:
             return _dim2Size;
         }
     }
+    bool Contains(T t)
+    {
+        for (int i = 0; i < _dim1Size; i++)
+        {
+            for (int j = 0; j < _dim2Size; j++)
+            {
+                if (t == _array[i][j])
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 private:
     int _dim1Size, _dim2Size;
     T** _array;
